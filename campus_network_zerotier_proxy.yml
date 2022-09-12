@@ -6,13 +6,13 @@
 #  external-controller: ':9090'
 
 proxies:
-  - name: "http"
+  - name: http
     type: http
     server: 10.147.20.2  # set your virtual remote IP provided by zerotier
     port: 7890
 
-proxy_groups:
-  - name: "Proxy"
+proxy-groups:
+  - name: Proxy
     type: select
     proxies:
       - http
