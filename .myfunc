@@ -1,0 +1,23 @@
+# sort df
+function sdf() {
+    df -h | sort -r -h -k 2 | grep dev | grep -v "loop"
+}
+
+# filter all function in binary
+function filt_func_name_in_bin() {
+    strings $1 | sed 's/^*/_Z/' | xargs -I{} c++filt {} 
+}
+
+function sum_cpu_usage() {
+    x=0
+    while read name; do 
+        x=$((x+$name))
+    done < <(ps aux | grep $1 | awk '{print $3}')
+    
+    echo $x
+}
+
+alias ffnib=filt_func_name_in_bin
+alias scu=sum_cpu_usage
+
+
