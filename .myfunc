@@ -29,6 +29,20 @@ function git_line_count {
     git log --author="hebangwen" --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "added lines: %s, removed lines: %s, total lines: %s\n", add, subs, loc }' -
 }
 
+update_path() {
+    # 获取当前的PATH
+    current_path=$PATH
+
+    # 删除函数宿主机路径
+    new_path=$(echo "$current_path" | tr ':' '\n' | grep -v '/mnt/c/' | paste -sd ':' -)
+
+    # 保存修改后的路径为NEW_PATH
+    export NEW_PATH="$new_path"
+
+    # 在当前会话中更新PATH
+    export PATH="$NEW_PATH"
+}
+
 alias ffnib=filt_func_name_in_bin
 alias scu=sum_cpu_usage
 
