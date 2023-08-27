@@ -1,8 +1,6 @@
+changeps1: false
 report_errors: false
 channels:
   - conda-forge
   - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
   - defaults
-proxy_servers:
-  http: http://localhost:7890
-  https: http://localhost:7890
