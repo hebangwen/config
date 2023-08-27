@@ -1,23 +1,27 @@
 function prompt_virtualenv {
   PYPATH=$(which python)
-  NEW_PATH=${PYPATH: : -7}
-  PYV=$(ls $NEW_PATH | grep "^python[23].[0-9]$" | head -c 7 | tail -c 1)
-
-  venv=$VIRTUAL_ENV
-  if [[ -d $venv ]]; then
-    prompt=${venv##*/}
-    echo "($prompt)"
+  if [ ! -f $PYPATH ]; then
+    echo ""
   else
-    env=$CONDA_DEFAULT_ENV
-    if [[ $env = "" ]]; then
+    NEW_PATH=${PYPATH: : -7}
+    PYV=$(ls $NEW_PATH | grep "^python[23].[0-9]$" | head -c 7 | tail -c 1)
+
+    venv=$VIRTUAL_ENV
+    if [[ -d $venv ]]; then
+      prompt=${venv##*/}
+      echo "($prompt)"
+    else
+      env=$CONDA_DEFAULT_ENV
+      if [[ $env = "" ]]; then
         env="root"
+      fi
+      if [[ ${PYV:0:1} = "3" ]]; then
+        prompt=$PY3$env$BRACKET
+      elif [[ ${PYV:0:1} = "2" ]]; then
+        prompt=$PY2$env$BRACKET
+      fi
+      echo "($prompt)"
     fi
-    if [[ ${PYV:0:1} = "3" ]]; then
-      prompt=$PY3$env$BRACKET
-    elif [[ ${PYV:0:1} = "2" ]]; then
-      prompt=$PY2$env$BRACKET
-    fi
-    echo "($prompt)"
   fi
 }
 
