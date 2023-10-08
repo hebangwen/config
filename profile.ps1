@@ -2,6 +2,11 @@ function Open-Current-Directory {
     explorer .
 }
 
+
+function rcode($remote_name, $remote_path) { 
+    code --folder-uri=vscode-remote://ssh-remote+$remote_name/$remote_path 
+}
+
 Set-Alias e. Open-Current-Directory
 New-Alias which Get-Command
 New-Alias exp explorer.exe
