@@ -1,0 +1,165 @@
+parsers: # array
+  - reg: ^.*$ # 匹配所有订阅
+    # 删除服务商提供的策略组和规则
+    code: |
+      module.exports.parse = (raw, { yaml }) => {
+        const rawObj = yaml.parse(raw)
+        const groups = []
+        const rules = []
+        return yaml.stringify({ ...rawObj, 'proxy-groups': groups, rules })
+      }
+    # 建立自己的配置
+    yaml:
+      # 建立策略组
+      prepend-proxy-groups:
+        - { name: Auto, type: url-test, url: 'http://www.gstatic.com/generate_204', interval: 300, tolerance: 50, lazy: true }
+        - { name: Select, type: select }
+
+        # - { name: Netflix, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        # - { name: Hulu, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        # - { name: Disney, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        # - { name: HBO, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        # - { name: Prime Video, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        - { name: YouTube, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        - { name: Spotify, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        - { name: iQIYI, type: select, proxies: [DIRECT, HK, TW, SG, JP, US, Auto, Select] }
+        - { name: Bilibili, type: select, proxies: [DIRECT, HK, TW, SG, JP, US, Auto, Select] }
+        - { name: PayPal, type: select, proxies: [US Fallback, US, JP, SG, TW, HK, Auto, Select, DIRECT] }
+        - { name: Stripe, type: select, proxies: [US Fallback, US, JP, SG, TW, HK, Auto, Select, DIRECT] }
+        - { name: OpenAI, type: select, proxies: [US Fallback, US, JP, SG, TW, HK, Auto, Select, DIRECT] }
+        - { name: Google Bard, type: select, proxies: [US Fallback, US, JP, SG, TW, HK, Auto, Select, DIRECT] }
+        - { name: new Bing, type: select, proxies: [US Fallback, US, JP, SG, TW, HK, Auto, Select, DIRECT] }
+        - { name: Claude, type: select, proxies: [US Fallback, US, JP, SG, TW, HK, Auto, Select, DIRECT] }
+        - { name: Poe, type: select, proxies: [US Fallback, US, JP, SG, TW, HK, Auto, Select, DIRECT] }
+        - { name: Games CN, type: select, proxies: [DIRECT, HK, TW, SG, JP, US, Auto, Select] }
+        - { name: Games, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        - { name: Google FCM, type: select, proxies: [DIRECT, HK, TW, SG, JP, US, Auto, Select] }
+        - { name: OneDrive, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        - { name: Microsoft CN, type: select, proxies: [DIRECT, HK, TW, SG, JP, US, Auto, Select] }
+        - { name: Microsoft, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        - { name: iCloud CN, type: select, proxies: [DIRECT, HK, TW, SG, JP, US, Auto, Select] }
+        - { name: iCloud, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        - { name: Apple CN, type: select, proxies: [DIRECT, HK, TW, SG, JP, US, Auto, Select] }
+        - { name: Apple, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        - { name: Social Media, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        - { name: Scholar CN, type: select, proxies: [DIRECT, HK, TW, SG, JP, US, Auto, Select] }
+        - { name: Scholar, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+        - { name: Global Direct, type: select, proxies: [DIRECT, HK, TW, SG, JP, US, Auto, Select] }
+        - { name: CN Direct, type: select, proxies: [DIRECT, HK, TW, SG, JP, US, Auto, Select] }
+        - { name: Final, type: select, proxies: [HK Fallback, HK, TW, SG, JP, US, Auto, Select, DIRECT] }
+
+        - { name: HK Fallback, type: fallback, url: 'http://www.gstatic.com/generate_204', interval: 300, proxies: [HK, TW, SG, JP, US] }
+        - { name: US Fallback, type: fallback, url: 'http://www.gstatic.com/generate_204', interval: 300, proxies: [US, JP, SG, TW, HK] }
+        - { name: HK, type: fallback, url: 'http://www.gstatic.com/generate_204', interval: 300, tolerance: 50, lazy: true, proxies: [DIRECT] }
+        - { name: TW, type: fallback, url: 'http://www.gstatic.com/generate_204', interval: 300, tolerance: 50, lazy: true, proxies: [DIRECT] }
+        - { name: SG, type: fallback, url: 'http://www.gstatic.com/generate_204', interval: 300, tolerance: 50, lazy: true, proxies: [DIRECT] }
+        - { name: JP, type: fallback, url: 'http://www.gstatic.com/generate_204', interval: 300, tolerance: 50, lazy: true, proxies: [DIRECT] }
+        - { name: US, type: fallback, url: 'http://www.gstatic.com/generate_204', interval: 300, tolerance: 50, lazy: true, proxies: [DIRECT] }
+        - { name: KR, type: fallback, url: 'http://www.gstatic.com/generate_204', interval: 300, tolerance: 50, lazy: true, proxies: [DIRECT] }
+        - { name: UK, type: fallback, url: 'http://www.gstatic.com/generate_204', interval: 300, tolerance: 50, lazy: true, proxies: [DIRECT] }
+
+        # 策略组示例
+        # - name: 分组名
+        #   type: select       # 手动选点
+        #         url-test     # 自动选择延迟最低的节点
+        #         fallback     # 节点故障时自动切换下一个
+        #         laod-balance # 均衡使用分组内的节点
+        #   url: http://www.gstatic.com/generate_204 # 测试地址 非 select 类型分组必要
+        #   interval: 300 # 自动测试间隔时间，单位秒 非 select 类型分组必要
+        #   tolerance: 50 # 允许的偏差，节点之间延迟差小于该值不切换 非必要
+        #   proxies:
+        #     - 节点名称或其他分组套娃
+
+      # 在第一个前插入代理，通过 fallback 最后回到 DIRECT
+      commands:
+        - proxy-groups.Auto.proxies=[]proxyNames
+        - proxy-groups.Select.proxies=[]proxyNames
+        - proxy-groups.HK.proxies.0+[]proxyNames|^(.*)(HK|香港|港|Hong ?[Kk]ong)+(.*)$ # 向指定策略组添加订阅中的节点名，可使用正则过滤
+        - proxy-groups.TW.proxies.0+[]proxyNames|^(.*)(TW|台湾|台|Tai ?[Ww]an|Tai ?[Pp]ei)+(.*)$
+        - proxy-groups.SG.proxies.0+[]proxyNames|^(.*)(SG|新加坡|坡|Singapore)+(.*)$
+        - proxy-groups.JP.proxies.0+[]proxyNames|^(.*)(JP|日本|日|Japan|Tokyo)+(.*)$
+        - proxy-groups.US.proxies.0+[]proxyNames|^(.*)(US|美国|美|United States)+(.*)$
+        - proxy-groups.KR.proxies.0+[]proxyNames|^(.*)(KR|韩国|韩|Korean|South ?Korean|Seoul)+(.*)$
+        - proxy-groups.UK.proxies.0+[]proxyNames|^(.*)(UK|英国|英|United Kingdom|England|London)+(.*)$
+
+        # 一些可能用到的正则过滤节点示例，使分组更细致
+        # []proxyNames|a                         # 包含 a
+        # []proxyNames|^(.*)(a|b)+(.*)$          # 包含 a 或 b
+        # []proxyNames|^(?=.*a)(?=.*b).*$        # 包含 a 和 b
+        # []proxyNames|^((?!b).)*a((?!b).)*$     # 包含 a 且不包含 b
+        # []proxyNames|^((?!b|c).)*a((?!b|c).)*$ # 包含 a 且不包含 b 或 c
+
+      # 添加规则
+      prepend-rules: # 规则由上往下遍历，如上面规则已经命中，则不再往下处理
+        # - RULE-SET,netflix,Netflix
+        # - RULE-SET,hulu,Hulu
+        # - RULE-SET,disney,Disney
+        # - RULE-SET,hbo,HBO
+        # - RULE-SET,primevideo,Prime Video
+        - RULE-SET,youtube,YouTube
+        - RULE-SET,spotify,Spotify
+        - RULE-SET,iqiyi,iQIYI
+        - RULE-SET,bilibili,Bilibili
+        - RULE-SET,paypal,PayPal
+        - RULE-SET,stripe,Stripe
+        - RULE-SET,openai,OpenAI
+        - RULE-SET,google,Google Bard
+        - RULE-SET,bing,new Bing
+        - RULE-SET,anthropic,Claude
+        - RULE-SET,quora,Poe
+        - RULE-SET,games@cn,Games CN
+        - RULE-SET,games,Games
+        - RULE-SET,googlefcm,Google FCM
+        - RULE-SET,onedrive,OneDrive
+        - RULE-SET,microsoft@cn,Microsoft CN
+        - RULE-SET,microsoft,Microsoft
+        - RULE-SET,icloud@cn,iCloud CN
+        - RULE-SET,icloud,iCloud
+        - RULE-SET,apple@cn,Apple CN
+        - RULE-SET,apple,Apple
+        - RULE-SET,telegram,Social Media
+        - RULE-SET,discord,Social Media
+        - RULE-SET,slack,Social Media
+        - RULE-SET,zoom,Social Media
+        - RULE-SET,scholar@cn,Scholar CN
+        - RULE-SET,scholar,Scholar
+        # - DOMAIN,clash.razord.top,DIRECT
+        # - DOMAIN,yacd.haishan.me,DIRECT
+        - GEOIP,LAN,Global Direct
+        - GEOIP,CN,CN Direct
+        - MATCH,Final
+
+      # 添加规则集
+      mix-rule-providers:
+        openai: { type: http, behavior: domain, url: 'https://rules.kr328.app/openai.yaml', path: ./ruleset/openai.yaml, interval: 86400 }
+        google: { type: http, behavior: domain, url: 'https://rules.kr328.app/google.yaml', path: ./ruleset/google.yaml, interval: 86400 }
+        bing: { type: http, behavior: domain, url: 'https://rules.kr328.app/bing.yaml', path: ./ruleset/bing.yaml, interval: 86400 }
+        # netflix: { type: http, behavior: domain, url: 'https://rules.kr328.app/netflix.yaml', path: ./ruleset/netflix.yaml, interval: 86400 }
+        # hulu: { type: http, behavior: domain, url: 'https://rules.kr328.app/hulu.yaml', path: ./ruleset/hulu.yaml, interval: 86400 }
+        # disney: { type: http, behavior: domain, url: 'https://rules.kr328.app/disney.yaml', path: ./ruleset/disney.yaml, interval: 86400 }
+        # hbo: { type: http, behavior: domain, url: 'https://rules.kr328.app/hbo.yaml', path: ./ruleset/hbo.yaml, interval: 86400 }
+        # primevideo: { type: http, behavior: domain, url: 'https://rules.kr328.app/primevideo.yaml', path: ./ruleset/primevideo.yaml, interval: 86400 }
+        youtube: { type: http, behavior: domain, url: 'https://rules.kr328.app/youtube.yaml', path: ./ruleset/youtube.yaml, interval: 86400 }
+        spotify: { type: http, behavior: domain, url: 'https://rules.kr328.app/spotify.yaml', path: ./ruleset/spotify.yaml, interval: 86400 }
+        iqiyi: { type: http, behavior: domain, url: 'https://rules.kr328.app/iqiyi.yaml', path: ./ruleset/iqiyi.yaml, interval: 86400 }
+        bilibili: { type: http, behavior: domain, url: 'https://rules.kr328.app/bilibili.yaml', path: ./ruleset/bilibili.yaml, interval: 86400 }
+        games@cn: { type: http, behavior: domain, url: 'https://rules.kr328.app/category-games@cn.yaml', path: ./ruleset/games@cn.yaml, interval: 86400 }
+        games: { type: http, behavior: domain, url: 'https://rules.kr328.app/category-games.yaml', path: ./ruleset/games.yaml, interval: 86400 }
+        googlefcm: { type: http, behavior: domain, url: 'https://rules.kr328.app/googlefcm.yaml', path: ./ruleset/googlefcm.yaml, interval: 86400 }
+        onedrive: { type: http, behavior: domain, url: 'https://rules.kr328.app/onedrive.yaml', path: ./ruleset/onedrive.yaml, interval: 86400 }
+        microsoft@cn: { type: http, behavior: domain, url: 'https://rules.kr328.app/microsoft@cn.yaml', path: ./ruleset/microsoft@cn.yaml, interval: 86400 }
+        microsoft: { type: http, behavior: domain, url: 'https://rules.kr328.app/microsoft.yaml', path: ./ruleset/microsoft.yaml, interval: 86400 }
+        icloud@cn: { type: http, behavior: domain, url: 'https://rules.kr328.app/icloud@cn.yaml', path: ./ruleset/icloud@cn.yaml, interval: 86400 }
+        icloud: { type: http, behavior: domain, url: 'https://rules.kr328.app/icloud.yaml', path: ./ruleset/icloud.yaml, interval: 86400 }
+        apple@cn: { type: http, behavior: domain, url: 'https://rules.kr328.app/apple@cn.yaml', path: ./ruleset/apple@cn.yaml, interval: 86400 }
+        apple: { type: http, behavior: domain, url: 'https://rules.kr328.app/apple.yaml', path: ./ruleset/apple.yaml, interval: 86400 }
+        telegram: { type: http, behavior: domain, url: 'https://rules.kr328.app/telegram.yaml', path: ./ruleset/telegram.yaml, interval: 86400 }
+        discord: { type: http, behavior: domain, url: 'https://rules.kr328.app/discord.yaml', path: ./ruleset/discord.yaml, interval: 86400 }
+        slack: { type: http, behavior: domain, url: 'https://rules.kr328.app/slack.yaml', path: ./ruleset/slack.yaml, interval: 86400 }
+        zoom: { type: http, behavior: domain, url: 'https://rules.kr328.app/zoom.yaml', path: ./ruleset/zoom.yaml, interval: 86400 }
+        scholar@cn: { type: http, behavior: domain, url: 'https://rules.kr328.app/category-scholar-cn.yaml', path: ./ruleset/scholar@cn.yaml, interval: 86400 }
+        scholar: { type: http, behavior: domain, url: 'https://rules.kr328.app/category-scholar-%21cn.yaml', path: ./ruleset/scholar.yaml, interval: 86400 }
+        paypal: { type: http, behavior: domain, url: 'https://rules.kr328.app/paypal.yaml', path: ./ruleset/paypal.yaml, interval: 86400 }
+        stripe: { type: http, behavior: domain, url: 'https://rules.kr328.app/stripe.yaml', path: ./ruleset/stripe.yaml, interval: 86400 }
+        anthropic: { type: http, behavior: domain, url: 'https://rules.kr328.app/anthropic.yaml', path: ./ruleset/anthropic.yaml, interval: 86400 }
+        quora: { type: http, behavior: domain, url: 'https://rules.kr328.app/quora.yaml', path: ./ruleset/quora.yaml, interval: 86400 }
