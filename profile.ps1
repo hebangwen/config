@@ -16,6 +16,17 @@ function Replace-NewLine-In-PDF {
 
 New-Alias rnip Replace-NewLine-In-PDF
 
+function proxy7890 {
+	$Env:http_proxy="http://127.0.0.1:7890";$Env:https_proxy="http://127.0.0.1:7890"
+}
+function unset_proxy7890 {
+	$env:http_proxy="";$env:https_proxy="";
+}
+
+New-Alias proxy proxy7890
+New-Alias unproxy unset_proxy7890
+
+
 Set-Alias e. Open-Current-Directory
 New-Alias which Get-Command
 New-Alias exp explorer.exe
