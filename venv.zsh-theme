@@ -13,7 +13,7 @@ function prompt_virtualenv {
     else
       env=$CONDA_DEFAULT_ENV
       if [[ $env = "" ]]; then
-        env="root"
+        env=""
       fi
       if [[ ${PYV:0:1} = "3" ]]; then
         prompt=$PY3$env$BRACKET
