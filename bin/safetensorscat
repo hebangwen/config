@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+import sys
+import os
+import json
+import struct
+from collections import defaultdict
+
+def read_safetensors_header(path):
+    """Read header JSON from a .safetensors file."""
+    with open(path, "rb") as f:
+        header_len_bytes = f.read(8)
+        if len(header_len_bytes) != 8:
+            raise ValueError(f"Invalid safetensors file: {path}")
+        header_len = struct.unpack("<Q", header_len_bytes)[0]
+        header_json = f.read(header_len).decode("utf-8")
+        header = json.loads(header_json)
+    return header
+
+def param_count(shape):
+    """Return total number of parameters from shape."""
+    count = 1
+    for dim in shape:
+        count *= dim
+    return count
+
+def print_flat(metadata):
+    """Print tensors line by line."""
+    for name, info in metadata.items():
+        if "dtype" not in info and "shape" not in info:
+            continue
+        dtype = info["dtype"]
+        shape = info["shape"]
+        count = param_count(shape)
+        print(f"{name}: dtype={dtype}, shape={shape}, parameters={count}")
+
+def print_tree(metadata):
+    """Print tensors in tree format similar to PyTorch."""
+    tree = defaultdict(dict)
+    for name, info in metadata.items():
+        parts = name.split(".")
+        current = tree
+        for p in parts[:-1]:
+            current = current.setdefault(p, {})
+        current[parts[-1]] = info
+
+    def _print_dict(d, prefix=""):
+        for k, v in d.items():
+            if isinstance(v, dict) and "dtype" not in v:
+                print(f"{prefix}{k}:")
+                _print_dict(v, prefix + "  ")
+            else:
+                if "dtype" not in v and "shape" not in v:
+                    continue
+                dtype = v["dtype"]
+                shape = v["shape"]
+                count = param_count(shape)
+                print(f"{prefix}{k}: dtype={dtype}, shape={shape}, parameters={count}")
+    _print_dict(tree)
+
+def load_metadata(path):
+    """Load tensor metadata from .safetensors or index.json."""
+    if path.endswith(".safetensors"):
+        return read_safetensors_header(path)
+    elif path.endswith(".safetensors.index.json"):
+        with open(path, "r", encoding="utf-8") as f:
+            index_data = json.load(f)
+        metadata = {}
+        for tensor_name, file_info in index_data["weight_map"].items():
+            tensor_file = os.path.join(os.path.dirname(path), file_info)
+            header = read_safetensors_header(tensor_file)
+            if tensor_name in header:
+                metadata[tensor_name] = header[tensor_name]
+        return metadata
+    else:
+        raise ValueError("Unsupported file type. Must be .safetensors or .safetensors.index.json")
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: safetensorscat <file> [--tree]")
+        sys.exit(1)
+    path = sys.argv[1]
+    tree_mode = "--tree" in sys.argv[2:]
+    metadata = load_metadata(path)
+    if tree_mode:
+        print_tree(metadata)
+    else:
+        print_flat(metadata)
+
+if __name__ == "__main__":
+    main()
+

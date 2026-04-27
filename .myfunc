@@ -48,4 +48,6 @@ function rcode { code --folder-uri=vscode-remote://ssh-remote+$1/$2 }
 alias ffnib=filt_func_name_in_bin
 alias scu=sum_cpu_usage
 
+bindkey "\e[1;3D" backward-word  # Alt + Left
+bindkey "\e[1;3C" forward-word   # Alt + Right
 

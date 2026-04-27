@@ -1,0 +1,170 @@
+#!/usr/bin/env python3
+"""
+npycat - A utility to display information about .npy and .npz files
+"""
+
+import argparse
+import sys
+import os
+import numpy as np
+from pathlib import Path
+
+
+def format_size(size_bytes):
+    """Convert bytes to human readable format"""
+    if size_bytes == 0:
+        return "0B"
+    
+    size_names = ["B", "KB", "MB", "GB", "TB"]
+    i = 0
+    while size_bytes >= 1024 and i < len(size_names) - 1:
+        size_bytes /= 1024.0
+        i += 1
+    return f"{size_bytes:.2f}{size_names[i]}"
+
+
+def print_array_info(name, array, indent=""):
+    """Print detailed information about a numpy array"""
+    print(f"{indent}Array: {name}")
+    print(f"{indent}  Shape: {array.shape}")
+    print(f"{indent}  Data type: {array.dtype}")
+    print(f"{indent}  Size: {array.size} elements")
+    print(f"{indent}  Memory usage: {format_size(array.nbytes)}")
+    
+    # Print some statistics for numeric arrays
+    if np.issubdtype(array.dtype, np.number) and array.size > 0:
+        try:
+            print(f"{indent}  Min value: {np.min(array)}")
+            print(f"{indent}  Max value: {np.max(array)}")
+            print(f"{indent}  Mean value: {np.mean(array):.6f}")
+            if array.size > 1:
+                print(f"{indent}  Std deviation: {np.std(array):.6f}")
+        except Exception as e:
+            print(f"{indent}  Statistics: Unable to compute ({e})")
+    
+    # Show first few elements for small arrays
+    if array.size <= 20:
+        print(f"{indent}  Data preview:")
+        print(f"{indent}    {array}")
+    elif array.size > 0:
+        print(f"{indent}  Data preview (first 10 elements):")
+        flat_array = array.flatten()
+        preview = flat_array[:10]
+        print(f"{indent}    {preview}")
+        if array.size > 10:
+            print(f"{indent}    ... (and {array.size - 10} more elements)")
+
+
+def process_npy_file(filepath):
+    """Process a .npy file"""
+    try:
+        print(f"File: {filepath}")
+        print(f"Type: NumPy array file (.npy)")
+        print(f"File size: {format_size(os.path.getsize(filepath))}")
+        print("-" * 50)
+        
+        # Load the array
+        array = np.load(filepath)
+        print_array_info("", array)
+        
+    except Exception as e:
+        print(f"Error reading .npy file: {e}")
+        return False
+    
+    return True
+
+
+def process_npz_file(filepath):
+    """Process a .npz file"""
+    try:
+        print(f"File: {filepath}")
+        print(f"Type: NumPy compressed archive (.npz)")
+        print(f"File size: {format_size(os.path.getsize(filepath))}")
+        print("-" * 50)
+        
+        # Load the archive
+        with np.load(filepath) as data:
+            array_names = list(data.keys())
+            print(f"Number of arrays: {len(array_names)}")
+            print(f"Array names: {array_names}")
+            print()
+            
+            # Print info for each array
+            for i, name in enumerate(array_names):
+                if i > 0:
+                    print()
+                array = data[name]
+                print_array_info(name, array, indent="  ")
+                
+    except Exception as e:
+        print(f"Error reading .npz file: {e}")
+        return False
+    
+    return True
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Display information about NumPy .npy and .npz files",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  npycat data.npy          # Show info about a .npy file
+  npycat archive.npz       # Show info about a .npz file
+  npycat *.npy             # Show info about multiple files
+        """
+    )
+    
+    parser.add_argument(
+        'files',
+        nargs='+',
+        help='Path(s) to .npy or .npz file(s)'
+    )
+    
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='npycat 1.0.0'
+    )
+    
+    args = parser.parse_args()
+    
+    success_count = 0
+    total_count = len(args.files)
+    
+    for i, filepath in enumerate(args.files):
+        if i > 0:
+            print("\n" + "=" * 60 + "\n")
+        
+        # Check if file exists
+        if not os.path.exists(filepath):
+            print(f"Error: File '{filepath}' not found")
+            continue
+        
+        # Get file extension
+        file_path = Path(filepath)
+        extension = file_path.suffix.lower()
+        
+        # Process based on file type
+        if extension == '.npy':
+            if process_npy_file(filepath):
+                success_count += 1
+        elif extension == '.npz':
+            if process_npz_file(filepath):
+                success_count += 1
+        else:
+            print(f"Error: Unsupported file type '{extension}'. Only .npy and .npz files are supported.")
+    
+    # Print summary if multiple files
+    if total_count > 1:
+        print(f"\n{'='*60}")
+        print(f"Summary: Successfully processed {success_count}/{total_count} files")
+    
+    # Exit with error code if any files failed
+    if success_count < total_count:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+
