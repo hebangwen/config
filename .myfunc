@@ -1,21 +1,21 @@
 # sort df
 function sdf() {
-    df -h | sort -r -h -k 2 | grep dev | grep -v "loop"
+    df -h | grep -v "loop" | grep -v tmpfs
 }
 
-# filter all function in binary
-function filt_func_name_in_bin() {
-    strings $1 | sed 's/^*/_Z/' | xargs -I{} c++filt {} 
-}
+# # filter all function in binary
+# function filt_func_name_in_bin() {
+#     strings $1 | sed 's/^*/_Z/' | xargs -I{} c++filt {} 
+# }
 
-function sum_cpu_usage() {
-    x=0
-    while read name; do 
-        x=$((x+$name))
-    done < <(ps aux | grep $1 | awk '{print $3}')
-    
-    echo $x
-}
+# function sum_cpu_usage() {
+#     x=0
+#     while read name; do 
+#         x=$((x+$name))
+#     done < <(ps aux | grep $1 | awk '{print $3}')
+#     
+#     echo $x
+# }
 
 function unset_proxy {
     unset http_proxy
@@ -25,28 +25,25 @@ function unset_proxy {
     unset all_proxy
 }
 
-function git_line_count {
-    git log --author="hebangwen" --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "added lines: %s, removed lines: %s, total lines: %s\n", add, subs, loc }' -
-}
+# function git_line_count {
+#     git log --author="hebangwen" --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "added lines: %s, removed lines: %s, total lines: %s\n", add, subs, loc }' -
+# }
 
-update_path() {
-    # 获取当前的PATH
-    current_path=$PATH
+# update_path() {
+#     # 获取当前的PATH
+#     current_path=$PATH
+# 
+#     # 删除函数宿主机路径
+#     new_path=$(echo "$current_path" | tr ':' '\n' | grep -v '/mnt/c/' | paste -sd ':' -)
+# 
+#     # 保存修改后的路径为NEW_PATH
+#     export NEW_PATH="$new_path"
+# 
+#     # 在当前会话中更新PATH
+#     export PATH="$NEW_PATH"
+# }
 
-    # 删除函数宿主机路径
-    new_path=$(echo "$current_path" | tr ':' '\n' | grep -v '/mnt/c/' | paste -sd ':' -)
-
-    # 保存修改后的路径为NEW_PATH
-    export NEW_PATH="$new_path"
-
-    # 在当前会话中更新PATH
-    export PATH="$NEW_PATH"
-}
-
-function rcode { code --folder-uri=vscode-remote://ssh-remote+$1/$2 }
-
-alias ffnib=filt_func_name_in_bin
-alias scu=sum_cpu_usage
+# function rcode { code --folder-uri=vscode-remote://ssh-remote+$1/$2 }
 
 bindkey "\e[1;3D" backward-word  # Alt + Left
 bindkey "\e[1;3C" forward-word   # Alt + Right
