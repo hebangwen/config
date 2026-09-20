@@ -124,7 +124,7 @@ fi
 
 cp ./bin/* $HOME/.local/bin
 echo -e "${GREEN}>>> 拷贝 $(ls -1 bin | tr '\n' ' ') 到 $HOME/.local/bin/ 中"
-echo 'export PATH=$HOME/.local/bin:$PATH' >"$HOME/.zshrc"
+echo 'export PATH=$HOME/.local/bin:$PATH' >> "$HOME/.zshrc"
 echo -e "${GREEN}>>> 添加 $HOME/.local/bin/ 到 PATH 中"
 
 echo -e "${GREEN}======================================================${NC}"
