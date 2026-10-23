@@ -108,7 +108,23 @@ fi
 
 echo -e "${GREEN}>>> 配置更新完成。${NC}"
 
-# 6. 配置 conda
+# 6. 配置 .myfunc
+# -------------------------------------------
+if [ -f "./.myfunc" ]; then
+  cp ./.myfunc "$HOME/.myfunc"
+  echo -e "${GREEN}>>> 已拷贝 .myfunc 至 $HOME/.myfunc${NC}"
+  touch $HOME/.ai.api_base_key
+  echo -e "${GREEN}>>> 已创建 $HOME/.ai.api_base_key，可添加 OPENAI_API_BASE 和 OPENAI_API_KEY 到当前文件中${NC}"
+else
+  echo -e "${YELLOW}警告: 未找到 .myfunc，跳过。${NC}"
+fi
+
+if ! grep -qE "^[[:space:]]*(source|\.)[[:space:]]+.*/\.myfunc[\"']?[[:space:]]*$" "$ZSHRC"; then
+  echo 'source $HOME/.myfunc' >>"$ZSHRC"
+  echo -e "${GREEN}>>> 已添加 .myfunc 到 $ZSHRC${NC}"
+fi
+
+# 7. 配置 conda
 # -------------------------------------------
 CONDARC_SRC="./.condarc"
 if [ -f "$CONDARC_SRC" ]; then
@@ -137,7 +153,7 @@ CONDA_BIN="${CONDA_BIN:-$CONDA_ROOT/bin/conda}"
 "$CONDA_BIN" init --reverse zsh >/dev/null 2>&1
 "$CONDA_BIN" init zsh
 
-# 7. 更改默认 Shell 并提示
+# 8. 更改默认 Shell 并提示
 # -------------------------------------------
 CURRENT_SHELL=$(basename "$SHELL")
 if [ "$CURRENT_SHELL" != "zsh" ]; then
@@ -145,7 +161,7 @@ if [ "$CURRENT_SHELL" != "zsh" ]; then
   chsh -s "$(which zsh)"
 fi
 
-# 8. 拷贝 bin/* 脚本到 .local/bin 中
+# 9. 拷贝 bin/* 脚本到 .local/bin 中
 # -------------------------------------------
 if [ ! -d "$HOME/.local/bin/" ]; then
   echo -e "${GREEN}>>> 创建 $HOME/.local/bin...${NC}"
@@ -159,7 +175,7 @@ if ! grep -q 'export PATH=$HOME/.local/bin:$PATH' "$HOME/.zshrc"; then
   echo -e "${GREEN}>>> 添加 $HOME/.local/bin/ 到 PATH 中"
 fi
 
-# 9. 安装 uv 及常用工具
+# 10. 安装 uv 及常用工具
 # -------------------------------------------
 if ! command -v uv &>/dev/null && [ ! -x "$HOME/.local/bin/uv" ]; then
   echo -e "${GREEN}>>> 正在安装 uv...${NC}"
@@ -178,6 +194,7 @@ echo -e "${GREEN}======================================================${NC}"
 echo -e "${GREEN}   安装与配置全部完成！ ${NC}"
 echo -e "${GREEN}   当前主题已设置为: venv ${NC}"
 echo -e "${GREEN}   已安装插件: zsh-autosuggestions, zsh-syntax-highlighting ${NC}"
+echo -e "${GREEN}   已配置 .myfunc ${NC}"
 echo -e "${GREEN}   已配置 conda init 与 .condarc ${NC}"
 echo -e "${GREEN}   已安装 uv 工具: streamdown, pyzhihu-cli ${NC}"
 echo -e "${GREEN}======================================================${NC}"
