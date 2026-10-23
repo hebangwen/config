@@ -77,8 +77,9 @@ echo "已将 venv.zsh-theme 拷贝至 $ZSH_CUSTOM/themes/"
 ZSHRC="$HOME/.zshrc"
 
 # 备份 .zshrc
-cp "$ZSHRC" "${ZSHRC}.bak.$(date +%s)"
-echo "已备份原配置为 ${ZSHRC}.bak.$(date +%s)"
+BACKUP="${ZSHRC}.bak.$(date +%s)"
+cp "$ZSHRC" "$BACKUP"
+echo "已备份原配置为 $BACKUP"
 
 # 判断操作系统类型以适配 sed 命令 (macOS 的 sed 写法略有不同)
 OS="$(uname)"
@@ -107,7 +108,36 @@ fi
 
 echo -e "${GREEN}>>> 配置更新完成。${NC}"
 
-# 6. 更改默认 Shell 并提示
+# 6. 配置 conda
+# -------------------------------------------
+CONDARC_SRC="./.condarc"
+if [ -f "$CONDARC_SRC" ]; then
+  cp "$CONDARC_SRC" "$HOME/.condarc"
+  echo -e "${GREEN}>>> 已拷贝 .condarc 至 $HOME/.condarc${NC}"
+else
+  echo -e "${YELLOW}警告: 未找到 .condarc，跳过。${NC}"
+fi
+
+CONDA_ROOT="$HOME/miniforge3"
+CONDA_BIN="$(command -v conda)"
+
+if [ -z "$CONDA_BIN" ] && [ ! -x "$CONDA_ROOT/bin/conda" ]; then
+  echo -e "${GREEN}>>> 正在下载 miniforge ...${NC}"
+  INSTALLER_DIR="$(mktemp -d)"
+  INSTALLER="$INSTALLER_DIR/Miniforge3-$(uname)-$(uname -m).sh"
+  curl -fL -o "$INSTALLER" "https://github.com/conda-forge/miniforge/releases/latest/download/$(basename "$INSTALLER")"
+  # -b 批处理模式：自动接受许可协议、不修改 shell 配置；-p 指定安装目录
+  bash "$INSTALLER" -b -p "$CONDA_ROOT"
+  rm -rf "$INSTALLER_DIR"
+fi
+
+CONDA_BIN="${CONDA_BIN:-$CONDA_ROOT/bin/conda}"
+
+# 先清空已有初始化块再写入，避免重复 conda init 导致 PS1 被反复改写
+"$CONDA_BIN" init --reverse zsh >/dev/null 2>&1
+"$CONDA_BIN" init zsh
+
+# 7. 更改默认 Shell 并提示
 # -------------------------------------------
 CURRENT_SHELL=$(basename "$SHELL")
 if [ "$CURRENT_SHELL" != "zsh" ]; then
@@ -115,7 +145,7 @@ if [ "$CURRENT_SHELL" != "zsh" ]; then
   chsh -s "$(which zsh)"
 fi
 
-# 7. 拷贝 bin/* 脚本到 .local/bin 中
+# 8. 拷贝 bin/* 脚本到 .local/bin 中
 # -------------------------------------------
 if [ ! -d "$HOME/.local/bin/" ]; then
   echo -e "${GREEN}>>> 创建 $HOME/.local/bin...${NC}"
@@ -124,13 +154,32 @@ fi
 
 cp ./bin/* $HOME/.local/bin
 echo -e "${GREEN}>>> 拷贝 $(ls -1 bin | tr '\n' ' ') 到 $HOME/.local/bin/ 中"
-echo 'export PATH=$HOME/.local/bin:$PATH' >> "$HOME/.zshrc"
-echo -e "${GREEN}>>> 添加 $HOME/.local/bin/ 到 PATH 中"
+if ! grep -q 'export PATH=$HOME/.local/bin:$PATH' "$HOME/.zshrc"; then
+  echo 'export PATH=$HOME/.local/bin:$PATH' >>"$HOME/.zshrc"
+  echo -e "${GREEN}>>> 添加 $HOME/.local/bin/ 到 PATH 中"
+fi
+
+# 9. 安装 uv 及常用工具
+# -------------------------------------------
+if ! command -v uv &>/dev/null && [ ! -x "$HOME/.local/bin/uv" ]; then
+  echo -e "${GREEN}>>> 正在安装 uv...${NC}"
+  # PATH 由本脚本统一维护，禁止 installer 再次改写 shell 配置
+  curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh
+fi
+
+UV_BIN="$(command -v uv)"
+UV_BIN="${UV_BIN:-$HOME/.local/bin/uv}"
+
+echo -e "${GREEN}>>> 正在安装 uv 工具...${NC}"
+"$UV_BIN" tool install streamdown
+"$UV_BIN" tool install pyzhihu-cli
 
 echo -e "${GREEN}======================================================${NC}"
 echo -e "${GREEN}   安装与配置全部完成！ ${NC}"
 echo -e "${GREEN}   当前主题已设置为: venv ${NC}"
 echo -e "${GREEN}   已安装插件: zsh-autosuggestions, zsh-syntax-highlighting ${NC}"
+echo -e "${GREEN}   已配置 conda init 与 .condarc ${NC}"
+echo -e "${GREEN}   已安装 uv 工具: streamdown, pyzhihu-cli ${NC}"
 echo -e "${GREEN}======================================================${NC}"
 echo -e "${YELLOW}请执行以下命令立即生效：${NC}"
 echo -e "    source ~/.zshrc"
